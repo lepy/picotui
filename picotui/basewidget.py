@@ -51,8 +51,9 @@ class Widget(Screen):
         else:
             key = os.read(0, 32)
             if key[0] != 0x1b:
-                self.kbuf = key[1:]
-                key = key[0:1]
+                key = key.decode()
+                self.kbuf = key[1:].encode()
+                key = key[0:1].encode()
         key = KEYMAP.get(key, key)
 
         if isinstance(key, bytes) and key.startswith(b"\x1b[M") and len(key) == 6:
@@ -79,14 +80,21 @@ class Widget(Screen):
                 return res
 
 
+class ChoiceWidget(Widget):
+
+    def __init__(self, choice):
+        super().__init__()
+        self.choice = choice
+
+
 # Widget with few internal selectable items
-class ItemSelWidget(Widget):
+class ItemSelWidget(ChoiceWidget):
 
     def __init__(self, items):
-        super().__init__()
+        super().__init__(0)
         self.items = items
-        self.selected = 0
 
     def move_sel(self, direction):
-        self.selected = (self.selected + direction) % len(self.items)
+        self.choice = (self.choice + direction) % len(self.items)
         self.redraw()
+        self.signal("changed")
