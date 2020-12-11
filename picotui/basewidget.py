@@ -1,6 +1,7 @@
 import os
 
-from .screen import *
+from .screen import Screen
+from .defs import KEYMAP as _KEYMAP
 
 
 # Standard widget result actions (as return from .loop())
@@ -10,11 +11,6 @@ ACTION_NEXT = 1002
 ACTION_PREV = 1003
 
 class Widget(Screen):
-
-    focusable = False
-    # If set to non-False, pressing Enter on this widget finishes
-    # dialog, with Dialog.loop() return value being this value.
-    finish_dialog = False
 
     def __init__(self):
         self.kbuf = b""
@@ -54,7 +50,7 @@ class Widget(Screen):
                 key = key.decode()
                 self.kbuf = key[1:].encode()
                 key = key[0:1].encode()
-        key = KEYMAP.get(key, key)
+        key = _KEYMAP.get(key, key)
 
         if isinstance(key, bytes) and key.startswith(b"\x1b[M") and len(key) == 6:
             row = key[5] - 33
@@ -80,11 +76,26 @@ class Widget(Screen):
                 return res
 
 
-class ChoiceWidget(Widget):
+class FocusableWidget(Widget):
+    # If set to non-False, pressing Enter on this widget finishes
+    # dialog, with Dialog.loop() return value being this value.
+    finish_dialog = False
+
+
+class EditableWidget(FocusableWidget):
+
+    def get(self):
+        raise NotImplementedError
+
+
+class ChoiceWidget(EditableWidget):
 
     def __init__(self, choice):
         super().__init__()
         self.choice = choice
+
+    def get(self):
+        return self.choice
 
 
 # Widget with few internal selectable items
