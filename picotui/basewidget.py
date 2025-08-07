@@ -53,6 +53,8 @@ class Widget(Screen):
         key = _KEYMAP.get(key, key)
 
         if isinstance(key, bytes) and key.startswith(b"\x1b[M") and len(key) == 6:
+            if key[3] != 32:
+                return None
             row = key[5] - 33
             col = key[4] - 33
             return [col, row]
@@ -70,6 +72,8 @@ class Widget(Screen):
         self.redraw()
         while True:
             key = self.get_input()
+            if key is None:
+                continue
             res = self.handle_input(key)
 
             if res is not None and res is not True:

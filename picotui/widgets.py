@@ -19,6 +19,7 @@ __all__ = (
     "WPopupList",
     "WDropDown",
     "WTextEntry",
+    "WPasswdEntry",
     "WMultiEntry",
     "WComboBox",
     "WCompletionList",
@@ -464,6 +465,12 @@ class WTextEntry(EditorExt, EditableWidget):
         self.attr_reset()
 
 
+class WPasswdEntry(WTextEntry):
+
+    def show_line(self, l, i):
+        super().show_line("*" * len(l), i)
+
+
 class WMultiEntry(EditorExt, EditableWidget):
 
     def __init__(self, w, h, lines):
@@ -514,6 +521,7 @@ class WComboBox(WTextEntry):
             val = popup.get_selected_value()
             if val is not None:
                 self.set_lines([val])
+                self.margin = 0
                 self.col = sys.maxsize
                 self.adjust_cursor_eol()
                 self.just_started = False
